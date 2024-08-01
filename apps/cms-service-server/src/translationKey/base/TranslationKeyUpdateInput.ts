@@ -11,18 +11,31 @@ https://docs.amplication.com/how-to/custom-code
   */
 import { InputType, Field } from "@nestjs/graphql";
 import { ApiProperty } from "@nestjs/swagger";
+import { CategoryWhereUniqueInput } from "../../category/base/CategoryWhereUniqueInput";
 import {
+  ValidateNested,
+  IsOptional,
   IsString,
   MaxLength,
-  IsOptional,
-  ValidateNested,
 } from "class-validator";
-import { OrganizationWhereUniqueInput } from "../../organization/base/OrganizationWhereUniqueInput";
 import { Type } from "class-transformer";
+import { OrganizationWhereUniqueInput } from "../../organization/base/OrganizationWhereUniqueInput";
 import { TranslationValueUpdateManyWithoutTranslationKeysInput } from "./TranslationValueUpdateManyWithoutTranslationKeysInput";
 
 @InputType()
 class TranslationKeyUpdateInput {
+  @ApiProperty({
+    required: false,
+    type: () => CategoryWhereUniqueInput,
+  })
+  @ValidateNested()
+  @Type(() => CategoryWhereUniqueInput)
+  @IsOptional()
+  @Field(() => CategoryWhereUniqueInput, {
+    nullable: true,
+  })
+  category?: CategoryWhereUniqueInput | null;
+
   @ApiProperty({
     required: false,
     type: String,

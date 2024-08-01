@@ -55,6 +55,12 @@ export class TranslationKeyControllerBase {
       data: {
         ...data,
 
+        category: data.category
+          ? {
+              connect: data.category,
+            }
+          : undefined,
+
         organization: data.organization
           ? {
               connect: data.organization,
@@ -62,6 +68,12 @@ export class TranslationKeyControllerBase {
           : undefined,
       },
       select: {
+        category: {
+          select: {
+            id: true,
+          },
+        },
+
         createdAt: true,
         description: true,
         id: true,
@@ -97,6 +109,12 @@ export class TranslationKeyControllerBase {
     return this.service.translationKeys({
       ...args,
       select: {
+        category: {
+          select: {
+            id: true,
+          },
+        },
+
         createdAt: true,
         description: true,
         id: true,
@@ -131,6 +149,12 @@ export class TranslationKeyControllerBase {
     const result = await this.service.translationKey({
       where: params,
       select: {
+        category: {
+          select: {
+            id: true,
+          },
+        },
+
         createdAt: true,
         description: true,
         id: true,
@@ -175,6 +199,12 @@ export class TranslationKeyControllerBase {
         data: {
           ...data,
 
+          category: data.category
+            ? {
+                connect: data.category,
+              }
+            : undefined,
+
           organization: data.organization
             ? {
                 connect: data.organization,
@@ -182,6 +212,12 @@ export class TranslationKeyControllerBase {
             : undefined,
         },
         select: {
+          category: {
+            select: {
+              id: true,
+            },
+          },
+
           createdAt: true,
           description: true,
           id: true,
@@ -224,6 +260,12 @@ export class TranslationKeyControllerBase {
       return await this.service.deleteTranslationKey({
         where: params,
         select: {
+          category: {
+            select: {
+              id: true,
+            },
+          },
+
           createdAt: true,
           description: true,
           id: true,

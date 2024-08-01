@@ -18,18 +18,7 @@ import { SortOrder } from "../../util/SortOrder";
   isAbstract: true,
   description: undefined,
 })
-class TranslationKeyOrderByInput {
-  @ApiProperty({
-    required: false,
-    enum: ["asc", "desc"],
-  })
-  @IsOptional()
-  @IsEnum(SortOrder)
-  @Field(() => SortOrder, {
-    nullable: true,
-  })
-  categoryId?: SortOrder;
-
+class CategoryOrderByInput {
   @ApiProperty({
     required: false,
     enum: ["asc", "desc"],
@@ -40,17 +29,6 @@ class TranslationKeyOrderByInput {
     nullable: true,
   })
   createdAt?: SortOrder;
-
-  @ApiProperty({
-    required: false,
-    enum: ["asc", "desc"],
-  })
-  @IsOptional()
-  @IsEnum(SortOrder)
-  @Field(() => SortOrder, {
-    nullable: true,
-  })
-  description?: SortOrder;
 
   @ApiProperty({
     required: false,
@@ -72,18 +50,7 @@ class TranslationKeyOrderByInput {
   @Field(() => SortOrder, {
     nullable: true,
   })
-  key?: SortOrder;
-
-  @ApiProperty({
-    required: false,
-    enum: ["asc", "desc"],
-  })
-  @IsOptional()
-  @IsEnum(SortOrder)
-  @Field(() => SortOrder, {
-    nullable: true,
-  })
-  organizationId?: SortOrder;
+  name?: SortOrder;
 
   @ApiProperty({
     required: false,
@@ -97,4 +64,4 @@ class TranslationKeyOrderByInput {
   updatedAt?: SortOrder;
 }
 
-export { TranslationKeyOrderByInput as TranslationKeyOrderByInput };
+export { CategoryOrderByInput as CategoryOrderByInput };

@@ -15,6 +15,7 @@ import {
   Prisma,
   TranslationKey as PrismaTranslationKey,
   TranslationValue as PrismaTranslationValue,
+  Category as PrismaCategory,
   Organization as PrismaOrganization,
 } from "@prisma/client";
 
@@ -62,6 +63,14 @@ export class TranslationKeyServiceBase {
         where: { id: parentId },
       })
       .translationValues(args);
+  }
+
+  async getCategory(parentId: string): Promise<PrismaCategory | null> {
+    return this.prisma.translationKey
+      .findUnique({
+        where: { id: parentId },
+      })
+      .category();
   }
 
   async getOrganization(parentId: string): Promise<PrismaOrganization | null> {

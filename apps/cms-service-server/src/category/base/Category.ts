@@ -11,29 +11,18 @@ https://docs.amplication.com/how-to/custom-code
   */
 import { ObjectType, Field } from "@nestjs/graphql";
 import { ApiProperty } from "@nestjs/swagger";
-import { Category } from "../../category/base/Category";
 import {
-  ValidateNested,
-  IsOptional,
   IsDate,
   IsString,
   MaxLength,
+  IsOptional,
+  ValidateNested,
 } from "class-validator";
 import { Type } from "class-transformer";
-import { Organization } from "../../organization/base/Organization";
-import { TranslationValue } from "../../translationValue/base/TranslationValue";
+import { TranslationKey } from "../../translationKey/base/TranslationKey";
 
 @ObjectType()
-class TranslationKey {
-  @ApiProperty({
-    required: false,
-    type: () => Category,
-  })
-  @ValidateNested()
-  @Type(() => Category)
-  @IsOptional()
-  category?: Category | null;
-
+class Category {
   @ApiProperty({
     required: true,
   })
@@ -41,18 +30,6 @@ class TranslationKey {
   @Type(() => Date)
   @Field(() => Date)
   createdAt!: Date;
-
-  @ApiProperty({
-    required: false,
-    type: String,
-  })
-  @IsString()
-  @MaxLength(1000)
-  @IsOptional()
-  @Field(() => String, {
-    nullable: true,
-  })
-  description!: string | null;
 
   @ApiProperty({
     required: true,
@@ -72,25 +49,16 @@ class TranslationKey {
   @Field(() => String, {
     nullable: true,
   })
-  key!: string | null;
+  name!: string | null;
 
   @ApiProperty({
     required: false,
-    type: () => Organization,
+    type: () => [TranslationKey],
   })
   @ValidateNested()
-  @Type(() => Organization)
+  @Type(() => TranslationKey)
   @IsOptional()
-  organization?: Organization | null;
-
-  @ApiProperty({
-    required: false,
-    type: () => [TranslationValue],
-  })
-  @ValidateNested()
-  @Type(() => TranslationValue)
-  @IsOptional()
-  translationValues?: Array<TranslationValue>;
+  translationKeys?: Array<TranslationKey>;
 
   @ApiProperty({
     required: true,
@@ -101,4 +69,4 @@ class TranslationKey {
   updatedAt!: Date;
 }
 
-export { TranslationKey as TranslationKey };
+export { Category as Category };
