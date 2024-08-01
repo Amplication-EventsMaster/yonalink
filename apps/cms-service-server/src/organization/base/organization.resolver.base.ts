@@ -13,6 +13,12 @@ import * as graphql from "@nestjs/graphql";
 import { GraphQLError } from "graphql";
 import { isRecordNotFoundError } from "../../prisma.util";
 import { MetaQueryPayload } from "../../util/MetaQueryPayload";
+import * as nestAccessControl from "nest-access-control";
+import * as gqlACGuard from "../../auth/gqlAC.guard";
+import { GqlDefaultAuthGuard } from "../../auth/gqlDefaultAuth.guard";
+import * as common from "@nestjs/common";
+import { AclFilterResponseInterceptor } from "../../interceptors/aclFilterResponse.interceptor";
+import { AclValidateRequestInterceptor } from "../../interceptors/aclValidateRequest.interceptor";
 import { Organization } from "./Organization";
 import { OrganizationCountArgs } from "./OrganizationCountArgs";
 import { OrganizationFindManyArgs } from "./OrganizationFindManyArgs";
@@ -23,10 +29,20 @@ import { DeleteOrganizationArgs } from "./DeleteOrganizationArgs";
 import { TranslationKeyFindManyArgs } from "../../translationKey/base/TranslationKeyFindManyArgs";
 import { TranslationKey } from "../../translationKey/base/TranslationKey";
 import { OrganizationService } from "../organization.service";
+@common.UseGuards(GqlDefaultAuthGuard, gqlACGuard.GqlACGuard)
 @graphql.Resolver(() => Organization)
 export class OrganizationResolverBase {
-  constructor(protected readonly service: OrganizationService) {}
+  constructor(
+    protected readonly service: OrganizationService,
+    protected readonly rolesBuilder: nestAccessControl.RolesBuilder
+  ) {}
 
+  @graphql.Query(() => MetaQueryPayload)
+  @nestAccessControl.UseRoles({
+    resource: "Organization",
+    action: "read",
+    possession: "any",
+  })
   async _organizationsMeta(
     @graphql.Args() args: OrganizationCountArgs
   ): Promise<MetaQueryPayload> {
@@ -36,14 +52,26 @@ export class OrganizationResolverBase {
     };
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @graphql.Query(() => [Organization])
+  @nestAccessControl.UseRoles({
+    resource: "Organization",
+    action: "read",
+    possession: "any",
+  })
   async organizations(
     @graphql.Args() args: OrganizationFindManyArgs
   ): Promise<Organization[]> {
     return this.service.organizations(args);
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @graphql.Query(() => Organization, { nullable: true })
+  @nestAccessControl.UseRoles({
+    resource: "Organization",
+    action: "read",
+    possession: "own",
+  })
   async organization(
     @graphql.Args() args: OrganizationFindUniqueArgs
   ): Promise<Organization | null> {
@@ -54,7 +82,13 @@ export class OrganizationResolverBase {
     return result;
   }
 
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @graphql.Mutation(() => Organization)
+  @nestAccessControl.UseRoles({
+    resource: "Organization",
+    action: "create",
+    possession: "any",
+  })
   async createOrganization(
     @graphql.Args() args: CreateOrganizationArgs
   ): Promise<Organization> {
@@ -64,7 +98,13 @@ export class OrganizationResolverBase {
     });
   }
 
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @graphql.Mutation(() => Organization)
+  @nestAccessControl.UseRoles({
+    resource: "Organization",
+    action: "update",
+    possession: "any",
+  })
   async updateOrganization(
     @graphql.Args() args: UpdateOrganizationArgs
   ): Promise<Organization | null> {
@@ -84,6 +124,11 @@ export class OrganizationResolverBase {
   }
 
   @graphql.Mutation(() => Organization)
+  @nestAccessControl.UseRoles({
+    resource: "Organization",
+    action: "delete",
+    possession: "any",
+  })
   async deleteOrganization(
     @graphql.Args() args: DeleteOrganizationArgs
   ): Promise<Organization | null> {
@@ -99,7 +144,13 @@ export class OrganizationResolverBase {
     }
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @graphql.ResolveField(() => [TranslationKey], { name: "translationKeys" })
+  @nestAccessControl.UseRoles({
+    resource: "TranslationKey",
+    action: "read",
+    possession: "any",
+  })
   async findTranslationKeys(
     @graphql.Parent() parent: Organization,
     @graphql.Args() args: TranslationKeyFindManyArgs

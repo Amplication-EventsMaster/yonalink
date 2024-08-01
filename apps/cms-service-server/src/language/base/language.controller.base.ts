@@ -16,7 +16,11 @@ import * as errors from "../../errors";
 import { Request } from "express";
 import { plainToClass } from "class-transformer";
 import { ApiNestedQuery } from "../../decorators/api-nested-query.decorator";
+import * as nestAccessControl from "nest-access-control";
+import * as defaultAuthGuard from "../../auth/defaultAuth.guard";
 import { LanguageService } from "../language.service";
+import { AclValidateRequestInterceptor } from "../../interceptors/aclValidateRequest.interceptor";
+import { AclFilterResponseInterceptor } from "../../interceptors/aclFilterResponse.interceptor";
 import { LanguageCreateInput } from "./LanguageCreateInput";
 import { Language } from "./Language";
 import { LanguageFindManyArgs } from "./LanguageFindManyArgs";
@@ -26,10 +30,24 @@ import { TranslationValueFindManyArgs } from "../../translationValue/base/Transl
 import { TranslationValue } from "../../translationValue/base/TranslationValue";
 import { TranslationValueWhereUniqueInput } from "../../translationValue/base/TranslationValueWhereUniqueInput";
 
+@swagger.ApiBearerAuth()
+@common.UseGuards(defaultAuthGuard.DefaultAuthGuard, nestAccessControl.ACGuard)
 export class LanguageControllerBase {
-  constructor(protected readonly service: LanguageService) {}
+  constructor(
+    protected readonly service: LanguageService,
+    protected readonly rolesBuilder: nestAccessControl.RolesBuilder
+  ) {}
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Post()
   @swagger.ApiCreatedResponse({ type: Language })
+  @nestAccessControl.UseRoles({
+    resource: "Language",
+    action: "create",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async createLanguage(
     @common.Body() data: LanguageCreateInput
   ): Promise<Language> {
@@ -45,9 +63,18 @@ export class LanguageControllerBase {
     });
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get()
   @swagger.ApiOkResponse({ type: [Language] })
   @ApiNestedQuery(LanguageFindManyArgs)
+  @nestAccessControl.UseRoles({
+    resource: "Language",
+    action: "read",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async languages(@common.Req() request: Request): Promise<Language[]> {
     const args = plainToClass(LanguageFindManyArgs, request.query);
     return this.service.languages({
@@ -62,9 +89,18 @@ export class LanguageControllerBase {
     });
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get("/:id")
   @swagger.ApiOkResponse({ type: Language })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "Language",
+    action: "read",
+    possession: "own",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async language(
     @common.Param() params: LanguageWhereUniqueInput
   ): Promise<Language | null> {
@@ -86,9 +122,18 @@ export class LanguageControllerBase {
     return result;
   }
 
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Patch("/:id")
   @swagger.ApiOkResponse({ type: Language })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "Language",
+    action: "update",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async updateLanguage(
     @common.Param() params: LanguageWhereUniqueInput,
     @common.Body() data: LanguageUpdateInput
@@ -118,6 +163,14 @@ export class LanguageControllerBase {
   @common.Delete("/:id")
   @swagger.ApiOkResponse({ type: Language })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "Language",
+    action: "delete",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async deleteLanguage(
     @common.Param() params: LanguageWhereUniqueInput
   ): Promise<Language | null> {
@@ -142,8 +195,14 @@ export class LanguageControllerBase {
     }
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get("/:id/translationValues")
   @ApiNestedQuery(TranslationValueFindManyArgs)
+  @nestAccessControl.UseRoles({
+    resource: "TranslationValue",
+    action: "read",
+    possession: "any",
+  })
   async findTranslationValues(
     @common.Req() request: Request,
     @common.Param() params: LanguageWhereUniqueInput
@@ -180,6 +239,11 @@ export class LanguageControllerBase {
   }
 
   @common.Post("/:id/translationValues")
+  @nestAccessControl.UseRoles({
+    resource: "Language",
+    action: "update",
+    possession: "any",
+  })
   async connectTranslationValues(
     @common.Param() params: LanguageWhereUniqueInput,
     @common.Body() body: TranslationValueWhereUniqueInput[]
@@ -197,6 +261,11 @@ export class LanguageControllerBase {
   }
 
   @common.Patch("/:id/translationValues")
+  @nestAccessControl.UseRoles({
+    resource: "Language",
+    action: "update",
+    possession: "any",
+  })
   async updateTranslationValues(
     @common.Param() params: LanguageWhereUniqueInput,
     @common.Body() body: TranslationValueWhereUniqueInput[]
@@ -214,6 +283,11 @@ export class LanguageControllerBase {
   }
 
   @common.Delete("/:id/translationValues")
+  @nestAccessControl.UseRoles({
+    resource: "Language",
+    action: "update",
+    possession: "any",
+  })
   async disconnectTranslationValues(
     @common.Param() params: LanguageWhereUniqueInput,
     @common.Body() body: TranslationValueWhereUniqueInput[]

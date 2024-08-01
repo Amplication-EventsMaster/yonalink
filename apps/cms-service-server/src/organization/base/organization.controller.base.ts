@@ -16,7 +16,11 @@ import * as errors from "../../errors";
 import { Request } from "express";
 import { plainToClass } from "class-transformer";
 import { ApiNestedQuery } from "../../decorators/api-nested-query.decorator";
+import * as nestAccessControl from "nest-access-control";
+import * as defaultAuthGuard from "../../auth/defaultAuth.guard";
 import { OrganizationService } from "../organization.service";
+import { AclValidateRequestInterceptor } from "../../interceptors/aclValidateRequest.interceptor";
+import { AclFilterResponseInterceptor } from "../../interceptors/aclFilterResponse.interceptor";
 import { OrganizationCreateInput } from "./OrganizationCreateInput";
 import { Organization } from "./Organization";
 import { OrganizationFindManyArgs } from "./OrganizationFindManyArgs";
@@ -26,10 +30,24 @@ import { TranslationKeyFindManyArgs } from "../../translationKey/base/Translatio
 import { TranslationKey } from "../../translationKey/base/TranslationKey";
 import { TranslationKeyWhereUniqueInput } from "../../translationKey/base/TranslationKeyWhereUniqueInput";
 
+@swagger.ApiBearerAuth()
+@common.UseGuards(defaultAuthGuard.DefaultAuthGuard, nestAccessControl.ACGuard)
 export class OrganizationControllerBase {
-  constructor(protected readonly service: OrganizationService) {}
+  constructor(
+    protected readonly service: OrganizationService,
+    protected readonly rolesBuilder: nestAccessControl.RolesBuilder
+  ) {}
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Post()
   @swagger.ApiCreatedResponse({ type: Organization })
+  @nestAccessControl.UseRoles({
+    resource: "Organization",
+    action: "create",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async createOrganization(
     @common.Body() data: OrganizationCreateInput
   ): Promise<Organization> {
@@ -46,9 +64,18 @@ export class OrganizationControllerBase {
     });
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get()
   @swagger.ApiOkResponse({ type: [Organization] })
   @ApiNestedQuery(OrganizationFindManyArgs)
+  @nestAccessControl.UseRoles({
+    resource: "Organization",
+    action: "read",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async organizations(@common.Req() request: Request): Promise<Organization[]> {
     const args = plainToClass(OrganizationFindManyArgs, request.query);
     return this.service.organizations({
@@ -64,9 +91,18 @@ export class OrganizationControllerBase {
     });
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get("/:id")
   @swagger.ApiOkResponse({ type: Organization })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "Organization",
+    action: "read",
+    possession: "own",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async organization(
     @common.Param() params: OrganizationWhereUniqueInput
   ): Promise<Organization | null> {
@@ -89,9 +125,18 @@ export class OrganizationControllerBase {
     return result;
   }
 
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Patch("/:id")
   @swagger.ApiOkResponse({ type: Organization })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "Organization",
+    action: "update",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async updateOrganization(
     @common.Param() params: OrganizationWhereUniqueInput,
     @common.Body() data: OrganizationUpdateInput
@@ -122,6 +167,14 @@ export class OrganizationControllerBase {
   @common.Delete("/:id")
   @swagger.ApiOkResponse({ type: Organization })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "Organization",
+    action: "delete",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async deleteOrganization(
     @common.Param() params: OrganizationWhereUniqueInput
   ): Promise<Organization | null> {
@@ -147,8 +200,14 @@ export class OrganizationControllerBase {
     }
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get("/:id/translationKeys")
   @ApiNestedQuery(TranslationKeyFindManyArgs)
+  @nestAccessControl.UseRoles({
+    resource: "TranslationKey",
+    action: "read",
+    possession: "any",
+  })
   async findTranslationKeys(
     @common.Req() request: Request,
     @common.Param() params: OrganizationWhereUniqueInput
@@ -180,6 +239,11 @@ export class OrganizationControllerBase {
   }
 
   @common.Post("/:id/translationKeys")
+  @nestAccessControl.UseRoles({
+    resource: "Organization",
+    action: "update",
+    possession: "any",
+  })
   async connectTranslationKeys(
     @common.Param() params: OrganizationWhereUniqueInput,
     @common.Body() body: TranslationKeyWhereUniqueInput[]
@@ -197,6 +261,11 @@ export class OrganizationControllerBase {
   }
 
   @common.Patch("/:id/translationKeys")
+  @nestAccessControl.UseRoles({
+    resource: "Organization",
+    action: "update",
+    possession: "any",
+  })
   async updateTranslationKeys(
     @common.Param() params: OrganizationWhereUniqueInput,
     @common.Body() body: TranslationKeyWhereUniqueInput[]
@@ -214,6 +283,11 @@ export class OrganizationControllerBase {
   }
 
   @common.Delete("/:id/translationKeys")
+  @nestAccessControl.UseRoles({
+    resource: "Organization",
+    action: "update",
+    possession: "any",
+  })
   async disconnectTranslationKeys(
     @common.Param() params: OrganizationWhereUniqueInput,
     @common.Body() body: TranslationKeyWhereUniqueInput[]

@@ -13,6 +13,12 @@ import * as graphql from "@nestjs/graphql";
 import { GraphQLError } from "graphql";
 import { isRecordNotFoundError } from "../../prisma.util";
 import { MetaQueryPayload } from "../../util/MetaQueryPayload";
+import * as nestAccessControl from "nest-access-control";
+import * as gqlACGuard from "../../auth/gqlAC.guard";
+import { GqlDefaultAuthGuard } from "../../auth/gqlDefaultAuth.guard";
+import * as common from "@nestjs/common";
+import { AclFilterResponseInterceptor } from "../../interceptors/aclFilterResponse.interceptor";
+import { AclValidateRequestInterceptor } from "../../interceptors/aclValidateRequest.interceptor";
 import { Language } from "./Language";
 import { LanguageCountArgs } from "./LanguageCountArgs";
 import { LanguageFindManyArgs } from "./LanguageFindManyArgs";
@@ -23,10 +29,20 @@ import { DeleteLanguageArgs } from "./DeleteLanguageArgs";
 import { TranslationValueFindManyArgs } from "../../translationValue/base/TranslationValueFindManyArgs";
 import { TranslationValue } from "../../translationValue/base/TranslationValue";
 import { LanguageService } from "../language.service";
+@common.UseGuards(GqlDefaultAuthGuard, gqlACGuard.GqlACGuard)
 @graphql.Resolver(() => Language)
 export class LanguageResolverBase {
-  constructor(protected readonly service: LanguageService) {}
+  constructor(
+    protected readonly service: LanguageService,
+    protected readonly rolesBuilder: nestAccessControl.RolesBuilder
+  ) {}
 
+  @graphql.Query(() => MetaQueryPayload)
+  @nestAccessControl.UseRoles({
+    resource: "Language",
+    action: "read",
+    possession: "any",
+  })
   async _languagesMeta(
     @graphql.Args() args: LanguageCountArgs
   ): Promise<MetaQueryPayload> {
@@ -36,14 +52,26 @@ export class LanguageResolverBase {
     };
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @graphql.Query(() => [Language])
+  @nestAccessControl.UseRoles({
+    resource: "Language",
+    action: "read",
+    possession: "any",
+  })
   async languages(
     @graphql.Args() args: LanguageFindManyArgs
   ): Promise<Language[]> {
     return this.service.languages(args);
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @graphql.Query(() => Language, { nullable: true })
+  @nestAccessControl.UseRoles({
+    resource: "Language",
+    action: "read",
+    possession: "own",
+  })
   async language(
     @graphql.Args() args: LanguageFindUniqueArgs
   ): Promise<Language | null> {
@@ -54,7 +82,13 @@ export class LanguageResolverBase {
     return result;
   }
 
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @graphql.Mutation(() => Language)
+  @nestAccessControl.UseRoles({
+    resource: "Language",
+    action: "create",
+    possession: "any",
+  })
   async createLanguage(
     @graphql.Args() args: CreateLanguageArgs
   ): Promise<Language> {
@@ -64,7 +98,13 @@ export class LanguageResolverBase {
     });
   }
 
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @graphql.Mutation(() => Language)
+  @nestAccessControl.UseRoles({
+    resource: "Language",
+    action: "update",
+    possession: "any",
+  })
   async updateLanguage(
     @graphql.Args() args: UpdateLanguageArgs
   ): Promise<Language | null> {
@@ -84,6 +124,11 @@ export class LanguageResolverBase {
   }
 
   @graphql.Mutation(() => Language)
+  @nestAccessControl.UseRoles({
+    resource: "Language",
+    action: "delete",
+    possession: "any",
+  })
   async deleteLanguage(
     @graphql.Args() args: DeleteLanguageArgs
   ): Promise<Language | null> {
@@ -99,7 +144,13 @@ export class LanguageResolverBase {
     }
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @graphql.ResolveField(() => [TranslationValue], { name: "translationValues" })
+  @nestAccessControl.UseRoles({
+    resource: "TranslationValue",
+    action: "read",
+    possession: "any",
+  })
   async findTranslationValues(
     @graphql.Parent() parent: Language,
     @graphql.Args() args: TranslationValueFindManyArgs

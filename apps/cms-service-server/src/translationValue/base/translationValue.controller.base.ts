@@ -16,17 +16,35 @@ import * as errors from "../../errors";
 import { Request } from "express";
 import { plainToClass } from "class-transformer";
 import { ApiNestedQuery } from "../../decorators/api-nested-query.decorator";
+import * as nestAccessControl from "nest-access-control";
+import * as defaultAuthGuard from "../../auth/defaultAuth.guard";
 import { TranslationValueService } from "../translationValue.service";
+import { AclValidateRequestInterceptor } from "../../interceptors/aclValidateRequest.interceptor";
+import { AclFilterResponseInterceptor } from "../../interceptors/aclFilterResponse.interceptor";
 import { TranslationValueCreateInput } from "./TranslationValueCreateInput";
 import { TranslationValue } from "./TranslationValue";
 import { TranslationValueFindManyArgs } from "./TranslationValueFindManyArgs";
 import { TranslationValueWhereUniqueInput } from "./TranslationValueWhereUniqueInput";
 import { TranslationValueUpdateInput } from "./TranslationValueUpdateInput";
 
+@swagger.ApiBearerAuth()
+@common.UseGuards(defaultAuthGuard.DefaultAuthGuard, nestAccessControl.ACGuard)
 export class TranslationValueControllerBase {
-  constructor(protected readonly service: TranslationValueService) {}
+  constructor(
+    protected readonly service: TranslationValueService,
+    protected readonly rolesBuilder: nestAccessControl.RolesBuilder
+  ) {}
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Post()
   @swagger.ApiCreatedResponse({ type: TranslationValue })
+  @nestAccessControl.UseRoles({
+    resource: "TranslationValue",
+    action: "create",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async createTranslationValue(
     @common.Body() data: TranslationValueCreateInput
   ): Promise<TranslationValue> {
@@ -68,9 +86,18 @@ export class TranslationValueControllerBase {
     });
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get()
   @swagger.ApiOkResponse({ type: [TranslationValue] })
   @ApiNestedQuery(TranslationValueFindManyArgs)
+  @nestAccessControl.UseRoles({
+    resource: "TranslationValue",
+    action: "read",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async translationValues(
     @common.Req() request: Request
   ): Promise<TranslationValue[]> {
@@ -99,9 +126,18 @@ export class TranslationValueControllerBase {
     });
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get("/:id")
   @swagger.ApiOkResponse({ type: TranslationValue })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "TranslationValue",
+    action: "read",
+    possession: "own",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async translationValue(
     @common.Param() params: TranslationValueWhereUniqueInput
   ): Promise<TranslationValue | null> {
@@ -135,9 +171,18 @@ export class TranslationValueControllerBase {
     return result;
   }
 
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Patch("/:id")
   @swagger.ApiOkResponse({ type: TranslationValue })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "TranslationValue",
+    action: "update",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async updateTranslationValue(
     @common.Param() params: TranslationValueWhereUniqueInput,
     @common.Body() data: TranslationValueUpdateInput
@@ -193,6 +238,14 @@ export class TranslationValueControllerBase {
   @common.Delete("/:id")
   @swagger.ApiOkResponse({ type: TranslationValue })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "TranslationValue",
+    action: "delete",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async deleteTranslationValue(
     @common.Param() params: TranslationValueWhereUniqueInput
   ): Promise<TranslationValue | null> {
