@@ -1,0 +1,49 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DB_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Organization {
+  address         String?
+  createdAt       DateTime         @default(now())
+  id              String           @id @default(cuid())
+  name            String?
+  phone           String?
+  translationKeys TranslationKey[]
+  updatedAt       DateTime         @updatedAt
+}
+
+model Language {
+  code              String?
+  createdAt         DateTime           @default(now())
+  id                String             @id @default(cuid())
+  name              String?
+  translationValues TranslationValue[]
+  updatedAt         DateTime           @updatedAt
+}
+
+model TranslationValue {
+  createdAt        DateTime        @default(now())
+  id               String          @id @default(cuid())
+  language         Language?       @relation(fields: [languageId], references: [id])
+  languageId       String?
+  translationKey   TranslationKey? @relation(fields: [translationKeyId], references: [id])
+  translationKeyId String?
+  updatedAt        DateTime        @updatedAt
+  value            String?
+}
+
+model TranslationKey {
+  createdAt         DateTime           @default(now())
+  description       String?
+  id                String             @id @default(cuid())
+  key               String?
+  organization      Organization?      @relation(fields: [organizationId], references: [id])
+  organizationId    String?
+  translationValues TranslationValue[]
+  updatedAt         DateTime           @updatedAt
+}
