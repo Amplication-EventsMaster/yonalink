@@ -49,10 +49,8 @@ const FIND_ONE_RESULT = {
 };
 
 const service = {
-  createTranslationKey() {
-    return CREATE_RESULT;
-  },
   translationKeys: () => FIND_MANY_RESULT,
+
   translationKey: ({ where }: { where: { id: string } }) => {
     switch (where.id) {
       case existingId:
@@ -123,18 +121,6 @@ describe("TranslationKey", () => {
     await app.init();
   });
 
-  test("POST /translationKeys", async () => {
-    await request(app.getHttpServer())
-      .post("/translationKeys")
-      .send(CREATE_INPUT)
-      .expect(HttpStatus.CREATED)
-      .expect({
-        ...CREATE_RESULT,
-        createdAt: CREATE_RESULT.createdAt.toISOString(),
-        updatedAt: CREATE_RESULT.updatedAt.toISOString(),
-      });
-  });
-
   test("GET /translationKeys", async () => {
     await request(app.getHttpServer())
       .get("/translationKeys")
@@ -167,28 +153,6 @@ describe("TranslationKey", () => {
         ...FIND_ONE_RESULT,
         createdAt: FIND_ONE_RESULT.createdAt.toISOString(),
         updatedAt: FIND_ONE_RESULT.updatedAt.toISOString(),
-      });
-  });
-
-  test("POST /translationKeys existing resource", async () => {
-    const agent = request(app.getHttpServer());
-    await agent
-      .post("/translationKeys")
-      .send(CREATE_INPUT)
-      .expect(HttpStatus.CREATED)
-      .expect({
-        ...CREATE_RESULT,
-        createdAt: CREATE_RESULT.createdAt.toISOString(),
-        updatedAt: CREATE_RESULT.updatedAt.toISOString(),
-      })
-      .then(function () {
-        agent
-          .post("/translationKeys")
-          .send(CREATE_INPUT)
-          .expect(HttpStatus.CONFLICT)
-          .expect({
-            statusCode: HttpStatus.CONFLICT,
-          });
       });
   });
 
