@@ -18,47 +18,45 @@ import { plainToClass } from "class-transformer";
 import { ApiNestedQuery } from "../../decorators/api-nested-query.decorator";
 import * as nestAccessControl from "nest-access-control";
 import * as defaultAuthGuard from "../../auth/defaultAuth.guard";
-import { OrganizationService } from "../organization.service";
+import { CategoryService } from "../category.service";
 import { AclValidateRequestInterceptor } from "../../interceptors/aclValidateRequest.interceptor";
 import { AclFilterResponseInterceptor } from "../../interceptors/aclFilterResponse.interceptor";
-import { OrganizationCreateInput } from "./OrganizationCreateInput";
-import { Organization } from "./Organization";
-import { OrganizationFindManyArgs } from "./OrganizationFindManyArgs";
-import { OrganizationWhereUniqueInput } from "./OrganizationWhereUniqueInput";
-import { OrganizationUpdateInput } from "./OrganizationUpdateInput";
+import { CategoryCreateInput } from "./CategoryCreateInput";
+import { Category } from "./Category";
+import { CategoryFindManyArgs } from "./CategoryFindManyArgs";
+import { CategoryWhereUniqueInput } from "./CategoryWhereUniqueInput";
+import { CategoryUpdateInput } from "./CategoryUpdateInput";
 import { TranslationKeyFindManyArgs } from "../../translationKey/base/TranslationKeyFindManyArgs";
 import { TranslationKey } from "../../translationKey/base/TranslationKey";
 import { TranslationKeyWhereUniqueInput } from "../../translationKey/base/TranslationKeyWhereUniqueInput";
 
 @swagger.ApiBearerAuth()
 @common.UseGuards(defaultAuthGuard.DefaultAuthGuard, nestAccessControl.ACGuard)
-export class OrganizationControllerBase {
+export class CategoryControllerBase {
   constructor(
-    protected readonly service: OrganizationService,
+    protected readonly service: CategoryService,
     protected readonly rolesBuilder: nestAccessControl.RolesBuilder
   ) {}
   @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Post()
-  @swagger.ApiCreatedResponse({ type: Organization })
+  @swagger.ApiCreatedResponse({ type: Category })
   @nestAccessControl.UseRoles({
-    resource: "Organization",
+    resource: "Category",
     action: "create",
     possession: "any",
   })
   @swagger.ApiForbiddenResponse({
     type: errors.ForbiddenException,
   })
-  async createOrganization(
-    @common.Body() data: OrganizationCreateInput
-  ): Promise<Organization> {
-    return await this.service.createOrganization({
+  async createCategory(
+    @common.Body() data: CategoryCreateInput
+  ): Promise<Category> {
+    return await this.service.createCategory({
       data: data,
       select: {
-        address: true,
         createdAt: true,
         id: true,
         name: true,
-        phone: true,
         updatedAt: true,
       },
     });
@@ -66,26 +64,24 @@ export class OrganizationControllerBase {
 
   @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get()
-  @swagger.ApiOkResponse({ type: [Organization] })
-  @ApiNestedQuery(OrganizationFindManyArgs)
+  @swagger.ApiOkResponse({ type: [Category] })
+  @ApiNestedQuery(CategoryFindManyArgs)
   @nestAccessControl.UseRoles({
-    resource: "Organization",
+    resource: "Category",
     action: "read",
     possession: "any",
   })
   @swagger.ApiForbiddenResponse({
     type: errors.ForbiddenException,
   })
-  async organizations(@common.Req() request: Request): Promise<Organization[]> {
-    const args = plainToClass(OrganizationFindManyArgs, request.query);
-    return this.service.organizations({
+  async categories(@common.Req() request: Request): Promise<Category[]> {
+    const args = plainToClass(CategoryFindManyArgs, request.query);
+    return this.service.categories({
       ...args,
       select: {
-        address: true,
         createdAt: true,
         id: true,
         name: true,
-        phone: true,
         updatedAt: true,
       },
     });
@@ -93,27 +89,25 @@ export class OrganizationControllerBase {
 
   @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get("/:id")
-  @swagger.ApiOkResponse({ type: Organization })
+  @swagger.ApiOkResponse({ type: Category })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
   @nestAccessControl.UseRoles({
-    resource: "Organization",
+    resource: "Category",
     action: "read",
     possession: "own",
   })
   @swagger.ApiForbiddenResponse({
     type: errors.ForbiddenException,
   })
-  async organization(
-    @common.Param() params: OrganizationWhereUniqueInput
-  ): Promise<Organization | null> {
-    const result = await this.service.organization({
+  async category(
+    @common.Param() params: CategoryWhereUniqueInput
+  ): Promise<Category | null> {
+    const result = await this.service.category({
       where: params,
       select: {
-        address: true,
         createdAt: true,
         id: true,
         name: true,
-        phone: true,
         updatedAt: true,
       },
     });
@@ -127,30 +121,28 @@ export class OrganizationControllerBase {
 
   @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Patch("/:id")
-  @swagger.ApiOkResponse({ type: Organization })
+  @swagger.ApiOkResponse({ type: Category })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
   @nestAccessControl.UseRoles({
-    resource: "Organization",
+    resource: "Category",
     action: "update",
     possession: "any",
   })
   @swagger.ApiForbiddenResponse({
     type: errors.ForbiddenException,
   })
-  async updateOrganization(
-    @common.Param() params: OrganizationWhereUniqueInput,
-    @common.Body() data: OrganizationUpdateInput
-  ): Promise<Organization | null> {
+  async updateCategory(
+    @common.Param() params: CategoryWhereUniqueInput,
+    @common.Body() data: CategoryUpdateInput
+  ): Promise<Category | null> {
     try {
-      return await this.service.updateOrganization({
+      return await this.service.updateCategory({
         where: params,
         data: data,
         select: {
-          address: true,
           createdAt: true,
           id: true,
           name: true,
-          phone: true,
           updatedAt: true,
         },
       });
@@ -165,28 +157,26 @@ export class OrganizationControllerBase {
   }
 
   @common.Delete("/:id")
-  @swagger.ApiOkResponse({ type: Organization })
+  @swagger.ApiOkResponse({ type: Category })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
   @nestAccessControl.UseRoles({
-    resource: "Organization",
+    resource: "Category",
     action: "delete",
     possession: "any",
   })
   @swagger.ApiForbiddenResponse({
     type: errors.ForbiddenException,
   })
-  async deleteOrganization(
-    @common.Param() params: OrganizationWhereUniqueInput
-  ): Promise<Organization | null> {
+  async deleteCategory(
+    @common.Param() params: CategoryWhereUniqueInput
+  ): Promise<Category | null> {
     try {
-      return await this.service.deleteOrganization({
+      return await this.service.deleteCategory({
         where: params,
         select: {
-          address: true,
           createdAt: true,
           id: true,
           name: true,
-          phone: true,
           updatedAt: true,
         },
       });
@@ -210,7 +200,7 @@ export class OrganizationControllerBase {
   })
   async findTranslationKeys(
     @common.Req() request: Request,
-    @common.Param() params: OrganizationWhereUniqueInput
+    @common.Param() params: CategoryWhereUniqueInput
   ): Promise<TranslationKey[]> {
     const query = plainToClass(TranslationKeyFindManyArgs, request.query);
     const results = await this.service.findTranslationKeys(params.id, {
@@ -246,12 +236,12 @@ export class OrganizationControllerBase {
 
   @common.Post("/:id/translationKeys")
   @nestAccessControl.UseRoles({
-    resource: "Organization",
+    resource: "Category",
     action: "update",
     possession: "any",
   })
   async connectTranslationKeys(
-    @common.Param() params: OrganizationWhereUniqueInput,
+    @common.Param() params: CategoryWhereUniqueInput,
     @common.Body() body: TranslationKeyWhereUniqueInput[]
   ): Promise<void> {
     const data = {
@@ -259,7 +249,7 @@ export class OrganizationControllerBase {
         connect: body,
       },
     };
-    await this.service.updateOrganization({
+    await this.service.updateCategory({
       where: params,
       data,
       select: { id: true },
@@ -268,12 +258,12 @@ export class OrganizationControllerBase {
 
   @common.Patch("/:id/translationKeys")
   @nestAccessControl.UseRoles({
-    resource: "Organization",
+    resource: "Category",
     action: "update",
     possession: "any",
   })
   async updateTranslationKeys(
-    @common.Param() params: OrganizationWhereUniqueInput,
+    @common.Param() params: CategoryWhereUniqueInput,
     @common.Body() body: TranslationKeyWhereUniqueInput[]
   ): Promise<void> {
     const data = {
@@ -281,7 +271,7 @@ export class OrganizationControllerBase {
         set: body,
       },
     };
-    await this.service.updateOrganization({
+    await this.service.updateCategory({
       where: params,
       data,
       select: { id: true },
@@ -290,12 +280,12 @@ export class OrganizationControllerBase {
 
   @common.Delete("/:id/translationKeys")
   @nestAccessControl.UseRoles({
-    resource: "Organization",
+    resource: "Category",
     action: "update",
     possession: "any",
   })
   async disconnectTranslationKeys(
-    @common.Param() params: OrganizationWhereUniqueInput,
+    @common.Param() params: CategoryWhereUniqueInput,
     @common.Body() body: TranslationKeyWhereUniqueInput[]
   ): Promise<void> {
     const data = {
@@ -303,7 +293,7 @@ export class OrganizationControllerBase {
         disconnect: body,
       },
     };
-    await this.service.updateOrganization({
+    await this.service.updateCategory({
       where: params,
       data,
       select: { id: true },

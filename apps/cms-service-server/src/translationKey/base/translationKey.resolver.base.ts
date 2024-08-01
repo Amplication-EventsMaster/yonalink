@@ -28,6 +28,7 @@ import { UpdateTranslationKeyArgs } from "./UpdateTranslationKeyArgs";
 import { DeleteTranslationKeyArgs } from "./DeleteTranslationKeyArgs";
 import { TranslationValueFindManyArgs } from "../../translationValue/base/TranslationValueFindManyArgs";
 import { TranslationValue } from "../../translationValue/base/TranslationValue";
+import { Category } from "../../category/base/Category";
 import { Organization } from "../../organization/base/Organization";
 import { TranslationKeyService } from "../translationKey.service";
 @common.UseGuards(GqlDefaultAuthGuard, gqlACGuard.GqlACGuard)
@@ -98,6 +99,12 @@ export class TranslationKeyResolverBase {
       data: {
         ...args.data,
 
+        category: args.data.category
+          ? {
+              connect: args.data.category,
+            }
+          : undefined,
+
         organization: args.data.organization
           ? {
               connect: args.data.organization,
@@ -122,6 +129,12 @@ export class TranslationKeyResolverBase {
         ...args,
         data: {
           ...args.data,
+
+          category: args.data.category
+            ? {
+                connect: args.data.category,
+              }
+            : undefined,
 
           organization: args.data.organization
             ? {
@@ -179,6 +192,27 @@ export class TranslationKeyResolverBase {
     }
 
     return results;
+  }
+
+  @common.UseInterceptors(AclFilterResponseInterceptor)
+  @graphql.ResolveField(() => Category, {
+    nullable: true,
+    name: "category",
+  })
+  @nestAccessControl.UseRoles({
+    resource: "Category",
+    action: "read",
+    possession: "any",
+  })
+  async getCategory(
+    @graphql.Parent() parent: TranslationKey
+  ): Promise<Category | null> {
+    const result = await this.service.getCategory(parent.id);
+
+    if (!result) {
+      return null;
+    }
+    return result;
   }
 
   @common.UseInterceptors(AclFilterResponseInterceptor)

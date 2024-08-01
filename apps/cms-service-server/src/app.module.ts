@@ -6,6 +6,7 @@ import { LanguageModule } from "./language/language.module";
 import { TranslationValueModule } from "./translationValue/translationValue.module";
 import { TranslationKeyModule } from "./translationKey/translationKey.module";
 import { UserModule } from "./user/user.module";
+import { CategoryModule } from "./category/category.module";
 import { HealthModule } from "./health/health.module";
 import { PrismaModule } from "./prisma/prisma.module";
 import { SecretsManagerModule } from "./providers/secrets/secretsManager.module";
@@ -28,6 +29,7 @@ import { AuthModule } from "./auth/auth.module";
     TranslationValueModule,
     TranslationKeyModule,
     UserModule,
+    CategoryModule,
     HealthModule,
     PrismaModule,
     SecretsManagerModule,

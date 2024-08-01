@@ -38,6 +38,8 @@ model TranslationValue {
 }
 
 model TranslationKey {
+  category          Category?          @relation(fields: [categoryId], references: [id])
+  categoryId        String?
   createdAt         DateTime           @default(now())
   description       String?
   id                String             @id @default(cuid())
@@ -58,4 +60,12 @@ model User {
   roles     Json
   updatedAt DateTime @updatedAt
   username  String   @unique
+}
+
+model Category {
+  createdAt       DateTime         @default(now())
+  id              String           @id @default(cuid())
+  name            String?
+  translationKeys TranslationKey[]
+  updatedAt       DateTime         @updatedAt
 }
