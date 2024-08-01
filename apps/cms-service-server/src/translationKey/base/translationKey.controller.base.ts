@@ -16,7 +16,11 @@ import * as errors from "../../errors";
 import { Request } from "express";
 import { plainToClass } from "class-transformer";
 import { ApiNestedQuery } from "../../decorators/api-nested-query.decorator";
+import * as nestAccessControl from "nest-access-control";
+import * as defaultAuthGuard from "../../auth/defaultAuth.guard";
 import { TranslationKeyService } from "../translationKey.service";
+import { AclValidateRequestInterceptor } from "../../interceptors/aclValidateRequest.interceptor";
+import { AclFilterResponseInterceptor } from "../../interceptors/aclFilterResponse.interceptor";
 import { TranslationKeyCreateInput } from "./TranslationKeyCreateInput";
 import { TranslationKey } from "./TranslationKey";
 import { TranslationKeyFindManyArgs } from "./TranslationKeyFindManyArgs";
@@ -26,10 +30,24 @@ import { TranslationValueFindManyArgs } from "../../translationValue/base/Transl
 import { TranslationValue } from "../../translationValue/base/TranslationValue";
 import { TranslationValueWhereUniqueInput } from "../../translationValue/base/TranslationValueWhereUniqueInput";
 
+@swagger.ApiBearerAuth()
+@common.UseGuards(defaultAuthGuard.DefaultAuthGuard, nestAccessControl.ACGuard)
 export class TranslationKeyControllerBase {
-  constructor(protected readonly service: TranslationKeyService) {}
+  constructor(
+    protected readonly service: TranslationKeyService,
+    protected readonly rolesBuilder: nestAccessControl.RolesBuilder
+  ) {}
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Post()
   @swagger.ApiCreatedResponse({ type: TranslationKey })
+  @nestAccessControl.UseRoles({
+    resource: "TranslationKey",
+    action: "create",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async createTranslationKey(
     @common.Body() data: TranslationKeyCreateInput
   ): Promise<TranslationKey> {
@@ -60,9 +78,18 @@ export class TranslationKeyControllerBase {
     });
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get()
   @swagger.ApiOkResponse({ type: [TranslationKey] })
   @ApiNestedQuery(TranslationKeyFindManyArgs)
+  @nestAccessControl.UseRoles({
+    resource: "TranslationKey",
+    action: "read",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async translationKeys(
     @common.Req() request: Request
   ): Promise<TranslationKey[]> {
@@ -86,9 +113,18 @@ export class TranslationKeyControllerBase {
     });
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get("/:id")
   @swagger.ApiOkResponse({ type: TranslationKey })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "TranslationKey",
+    action: "read",
+    possession: "own",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async translationKey(
     @common.Param() params: TranslationKeyWhereUniqueInput
   ): Promise<TranslationKey | null> {
@@ -117,9 +153,18 @@ export class TranslationKeyControllerBase {
     return result;
   }
 
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Patch("/:id")
   @swagger.ApiOkResponse({ type: TranslationKey })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "TranslationKey",
+    action: "update",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async updateTranslationKey(
     @common.Param() params: TranslationKeyWhereUniqueInput,
     @common.Body() data: TranslationKeyUpdateInput
@@ -164,6 +209,14 @@ export class TranslationKeyControllerBase {
   @common.Delete("/:id")
   @swagger.ApiOkResponse({ type: TranslationKey })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "TranslationKey",
+    action: "delete",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async deleteTranslationKey(
     @common.Param() params: TranslationKeyWhereUniqueInput
   ): Promise<TranslationKey | null> {
@@ -195,8 +248,14 @@ export class TranslationKeyControllerBase {
     }
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get("/:id/translationValues")
   @ApiNestedQuery(TranslationValueFindManyArgs)
+  @nestAccessControl.UseRoles({
+    resource: "TranslationValue",
+    action: "read",
+    possession: "any",
+  })
   async findTranslationValues(
     @common.Req() request: Request,
     @common.Param() params: TranslationKeyWhereUniqueInput
@@ -233,6 +292,11 @@ export class TranslationKeyControllerBase {
   }
 
   @common.Post("/:id/translationValues")
+  @nestAccessControl.UseRoles({
+    resource: "TranslationKey",
+    action: "update",
+    possession: "any",
+  })
   async connectTranslationValues(
     @common.Param() params: TranslationKeyWhereUniqueInput,
     @common.Body() body: TranslationValueWhereUniqueInput[]
@@ -250,6 +314,11 @@ export class TranslationKeyControllerBase {
   }
 
   @common.Patch("/:id/translationValues")
+  @nestAccessControl.UseRoles({
+    resource: "TranslationKey",
+    action: "update",
+    possession: "any",
+  })
   async updateTranslationValues(
     @common.Param() params: TranslationKeyWhereUniqueInput,
     @common.Body() body: TranslationValueWhereUniqueInput[]
@@ -267,6 +336,11 @@ export class TranslationKeyControllerBase {
   }
 
   @common.Delete("/:id/translationValues")
+  @nestAccessControl.UseRoles({
+    resource: "TranslationKey",
+    action: "update",
+    possession: "any",
+  })
   async disconnectTranslationValues(
     @common.Param() params: TranslationKeyWhereUniqueInput,
     @common.Body() body: TranslationValueWhereUniqueInput[]
