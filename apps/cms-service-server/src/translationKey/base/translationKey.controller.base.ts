@@ -19,11 +19,10 @@ import { ApiNestedQuery } from "../../decorators/api-nested-query.decorator";
 import * as nestAccessControl from "nest-access-control";
 import * as defaultAuthGuard from "../../auth/defaultAuth.guard";
 import { TranslationKeyService } from "../translationKey.service";
-import { AclValidateRequestInterceptor } from "../../interceptors/aclValidateRequest.interceptor";
 import { AclFilterResponseInterceptor } from "../../interceptors/aclFilterResponse.interceptor";
-import { TranslationKeyCreateInput } from "./TranslationKeyCreateInput";
-import { TranslationKey } from "./TranslationKey";
+import { AclValidateRequestInterceptor } from "../../interceptors/aclValidateRequest.interceptor";
 import { TranslationKeyFindManyArgs } from "./TranslationKeyFindManyArgs";
+import { TranslationKey } from "./TranslationKey";
 import { TranslationKeyWhereUniqueInput } from "./TranslationKeyWhereUniqueInput";
 import { TranslationKeyUpdateInput } from "./TranslationKeyUpdateInput";
 import { TranslationValueFindManyArgs } from "../../translationValue/base/TranslationValueFindManyArgs";
@@ -37,58 +36,6 @@ export class TranslationKeyControllerBase {
     protected readonly service: TranslationKeyService,
     protected readonly rolesBuilder: nestAccessControl.RolesBuilder
   ) {}
-  @common.UseInterceptors(AclValidateRequestInterceptor)
-  @common.Post()
-  @swagger.ApiCreatedResponse({ type: TranslationKey })
-  @nestAccessControl.UseRoles({
-    resource: "TranslationKey",
-    action: "create",
-    possession: "any",
-  })
-  @swagger.ApiForbiddenResponse({
-    type: errors.ForbiddenException,
-  })
-  async createTranslationKey(
-    @common.Body() data: TranslationKeyCreateInput
-  ): Promise<TranslationKey> {
-    return await this.service.createTranslationKey({
-      data: {
-        ...data,
-
-        category: data.category
-          ? {
-              connect: data.category,
-            }
-          : undefined,
-
-        organization: data.organization
-          ? {
-              connect: data.organization,
-            }
-          : undefined,
-      },
-      select: {
-        category: {
-          select: {
-            id: true,
-          },
-        },
-
-        createdAt: true,
-        description: true,
-        id: true,
-        key: true,
-
-        organization: {
-          select: {
-            id: true,
-          },
-        },
-
-        updatedAt: true,
-      },
-    });
-  }
 
   @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get()

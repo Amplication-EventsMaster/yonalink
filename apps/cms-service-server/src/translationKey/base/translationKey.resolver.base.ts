@@ -23,7 +23,6 @@ import { TranslationKey } from "./TranslationKey";
 import { TranslationKeyCountArgs } from "./TranslationKeyCountArgs";
 import { TranslationKeyFindManyArgs } from "./TranslationKeyFindManyArgs";
 import { TranslationKeyFindUniqueArgs } from "./TranslationKeyFindUniqueArgs";
-import { CreateTranslationKeyArgs } from "./CreateTranslationKeyArgs";
 import { UpdateTranslationKeyArgs } from "./UpdateTranslationKeyArgs";
 import { DeleteTranslationKeyArgs } from "./DeleteTranslationKeyArgs";
 import { TranslationValueFindManyArgs } from "../../translationValue/base/TranslationValueFindManyArgs";
@@ -82,36 +81,6 @@ export class TranslationKeyResolverBase {
       return null;
     }
     return result;
-  }
-
-  @common.UseInterceptors(AclValidateRequestInterceptor)
-  @graphql.Mutation(() => TranslationKey)
-  @nestAccessControl.UseRoles({
-    resource: "TranslationKey",
-    action: "create",
-    possession: "any",
-  })
-  async createTranslationKey(
-    @graphql.Args() args: CreateTranslationKeyArgs
-  ): Promise<TranslationKey> {
-    return await this.service.createTranslationKey({
-      ...args,
-      data: {
-        ...args.data,
-
-        category: args.data.category
-          ? {
-              connect: args.data.category,
-            }
-          : undefined,
-
-        organization: args.data.organization
-          ? {
-              connect: args.data.organization,
-            }
-          : undefined,
-      },
-    });
   }
 
   @common.UseInterceptors(AclValidateRequestInterceptor)
